@@ -4,6 +4,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -24,14 +25,16 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 public class Drive implements Subsystem {
 
     File swerveJsonDirectory = new File(Filesystem.getDeployDirectory(),"swerve");
     SwerveDrive drive;
 
+    Supplier<Pose3d> poseSupplier;
 
-    public Drive() {
+    public Drive(Supplier<Pose3d> poseSupplier) {
         try {
             drive = new SwerveParser(swerveJsonDirectory).createSwerveDrive(
                     Constants.driveConstants.maxSpeed,
@@ -49,10 +52,19 @@ public class Drive implements Subsystem {
         drive.pushOffsetsToControllers();
     }
 
+    @Override
+    public void periodic() {
+        drive.updateOdometry();
+    }
+
+    private void updateOdometry() {
+
+    }
+
     public Command createTrajectory(String name) {
         ChoreoTrajectory traj = Choreo.getTrajectory(name); //
 
-        Command resetPose = this.runOnce(() -> drive.resetOdometry(traj.getInitialPose()));
+        Command resetPose = this.runOnce(() -> drive.resetOdometry(traj.getFlippedInitialPose()));
 
         return resetPose.andThen(Choreo.choreoSwerveCommand(
                 traj,

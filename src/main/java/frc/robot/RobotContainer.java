@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -20,7 +22,9 @@ import frc.robot.subsystems.Drive;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
 
-  public final Drive drive = new Drive();
+  private vision tagCamera = new vision("april tag");
+
+  public final Drive drive = new Drive(Pose3d::new);
 
   private final CommandXboxController driverController =
       new CommandXboxController(0);
@@ -52,6 +56,7 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
+
   }
 
   /**
