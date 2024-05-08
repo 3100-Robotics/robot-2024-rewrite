@@ -8,7 +8,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.subsystems.Drive;
+import frc.robot.subsystems.Drivetrain;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -19,9 +19,9 @@ import frc.robot.subsystems.Drive;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
 
-  // public final Vision tagCamera = new Vision("april tags", Constants.Vision.kAprilTagCamTransform);
+  public final Vision tagCamera = new Vision("april tags", Constants.Vision.kAprilTagCamTransform);
 
-  public final Drive drive = new Drive(null);
+  public final Drivetrain drive = new Drivetrain(null);
 
   private final CommandXboxController driverController =
       new CommandXboxController(0);

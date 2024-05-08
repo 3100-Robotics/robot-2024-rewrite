@@ -4,10 +4,8 @@ package frc.robot.subsystems;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
@@ -27,42 +25,31 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
 
-public class Drive implements Subsystem {
+public class Drivetrain implements Subsystem {
 
     File swerveJsonDirectory = new File(Filesystem.getDeployDirectory(),"swerve");
     SwerveDrive drive;
 
    Vision tagCam;
 
-    public Drive(Vision tagCam) {
-        double angleConversionFactor = SwerveMath.calculateDegreesPerSteeringRotation(46.42);
-        // Motor conversion factor is (PI * WHEEL DIAMETER IN METERS) / (GEAR RATIO * ENCODER RESOLUTION).
-        //  In this case the wheel diameter is 4 inches, which must be converted to meters to get meters/second.
-        //  The gear ratio is 6.75 motor revolutions per wheel rotation.
-        //  The encoder resolution per motor revolution is 1 per motor revolution.
-        double driveConversionFactor = SwerveMath.calculateMetersPerRotation(
-                Units.inchesToMeters(3), 
-                Constants.driveConstants.driveGearRatio);
-
-
-
-        // Configure the Telemetry before creating the SwerveDrive to avoid unnecessary objects being created.
-        SwerveDriveTelemetry.verbosity = SwerveDriveTelemetry.TelemetryVerbosity.HIGH;
-        try
-        {
-            drive = new SwerveParser(swerveJsonDirectory).createSwerveDrive(Constants.driveConstants.maxSpeed);
-            // Alternative method if you don't want to supply the conversion factor via JSON files.
-            // swerveDrive = new SwerveParser(directory).createSwerveDrive(maximumSpeed, angleConversionFactor, driveConversionFactor);
-        } catch (Exception e)
-        {
+    public Drivetrain(Vision tagCam) {
+        try {
+            drive = new SwerveParser(swerveJsonDirectory).createSwerveDrive(
+                    Constants.driveConstants.maxSpeed,
+                    360,
+                    SwerveMath.calculateMetersPerRotation(
+                            Units.inchesToMeters(3),
+                            Constants.driveConstants.driveGearRatio,
+                            1));
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        drive.setHeadingCorrection(false);
-        // Heading correction should only be used while controlling the robot via angle.
+
+        SwerveDriveTelemetry.verbosity = SwerveDriveTelemetry.TelemetryVerbosity.HIGH;
         drive.setCosineCompensator(false);
-        // Disables cosine compensation for simulations since it causes discrepancies not seen in real life.
+        drive.pushOffsetsToControllers();
+        drive.setHeadingCorrection(false);
 
        this.tagCam = tagCam;
     }
