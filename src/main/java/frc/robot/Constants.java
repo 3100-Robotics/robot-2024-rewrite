@@ -4,6 +4,10 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.configs.*;
+import com.ctre.phoenix6.signals.GravityTypeValue;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
@@ -27,6 +31,31 @@ public final class Constants {
   public static class driveConstants {
     public static final double maxSpeed = Units.feetToMeters(14);
     public static final double driveGearRatio = 4.71;
+  }
+
+  public static class shooterConstants {
+    public static final int shooterMotorID = 0;
+    public static final int indexerMotorID = 0;
+
+    public static TalonFXConfiguration shooterConfigs = new TalonFXConfiguration()
+            .withMotorOutput(new MotorOutputConfigs()
+                    .withInverted(InvertedValue.Clockwise_Positive)
+                    .withNeutralMode(NeutralModeValue.Brake))
+            .withAudio(new AudioConfigs()
+                    .withBeepOnConfig(true)
+                    .withBeepOnBoot(true)
+                    .withAllowMusicDurDisable(true))
+            .withCurrentLimits(new CurrentLimitsConfigs()
+                    .withSupplyCurrentLimit(60)
+                    .withSupplyCurrentLimitEnable(true))
+            .withSlot0(new Slot0Configs()
+                    .withGravityType(GravityTypeValue.Elevator_Static)
+                    .withKP(1)
+                    .withKI(0)
+                    .withKD(0)
+                    .withKG(0)
+                    .withKS(0)
+                    .withKV(0));
   }
 
   public static class Vision {
