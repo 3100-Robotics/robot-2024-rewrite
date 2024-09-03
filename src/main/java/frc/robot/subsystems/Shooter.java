@@ -61,6 +61,10 @@ public class Shooter implements Subsystem {
             indexerMotor.set(indexerSpeed);});
     }
 
+    public Command setIndexerCommand(double speed) {
+        return this.runOnce(() -> indexerMotor.set(speed));
+    }
+
     /**
      * only sets the velocity of the shooter indexer is still a %
      */

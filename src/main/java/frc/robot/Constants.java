@@ -30,11 +30,11 @@ public final class Constants {
     public static final double maxSpeed = Units.feetToMeters(14);
     public static final double driveGearRatio = 4.71;
 
-    public static final double autoCollectP = 0.5;
+    public static final double autoCollectP = 0.05;
     public static final double autoCollectI = 0;
     public static final double autoCollectD = 0;
     public static final double autoCollectForwardSpeed = 1;
-    public static final double autoCollectMaxSideSpeed = 1;
+    public static final double autoCollectMaxSideSpeed = 0.5;
 
     public static final double autoShootP = 1;
     public static final double autoShootI = 0;
@@ -59,7 +59,7 @@ public final class Constants {
                     .withSupplyCurrentLimitEnable(true))
             .withSlot0(new Slot0Configs()
                     .withGravityType(GravityTypeValue.Elevator_Static)
-                    .withKP(0)
+                    .withKP(0.5)
                     .withKI(0)
                     .withKD(0)
                     .withKG(0)
@@ -118,7 +118,8 @@ public final class Constants {
                     .withMagnetOffset(-0.7822265625)
                     .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive));
 
-    public static final double collectAngle = -0.1789;
+    public static final double collectAngle = -0.19;
+    public static final double sourceCollectAngle = 0.3010;
     public static final double ampAngle = 0.3210;
     public static final double shootAngle = 0.1340;
   }

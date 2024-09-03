@@ -76,41 +76,46 @@ public class RobotContainer {
 
     // collecting
     driverController.leftBumper().onTrue(Commands.sequence(
-       pivot.goToPos(Constants.pivotConstants.collectAngle),
-       shooter.setCommand(-0.5, -0.3)
-               .alongWith(collector.runCommand(0.4)),
+       pivot.goToPos(Constants.pivotConstants.sourceCollectAngle),
+       shooter.setCommand(-0.5, -0.3),
         Commands.waitUntil(shooter.noteInPosition()),
-       shooter.setCommand(0, 0)));
+       shooter.setCommand(0, 0),
+        pivot.goToPos(Constants.pivotConstants.collectAngle)));
 
     driverController.x().whileTrue(Commands.parallel(
             pivot.goToPos(Constants.pivotConstants.collectAngle),
             drive.autoCollect(shooter.noteInPosition()),
-            shooter.setCommand(-0.4, -0.3),
-            collector.runCommand(0.3)).
+            shooter.setCommand(-0.6, -0.3),
+            collector.runCommand(0.8)).
             andThen(Commands.waitUntil(shooter.noteInPosition())).
             andThen(shooter.setCommand(0, 0)));
 
-    driverController.y().onTrue(Commands.sequence(
-            pivot.goToPos(Constants.pivotConstants.collectAngle),
-            shooter.setCommand(-0.4, -0.3)
-                    .alongWith(collector.runCommand(0.3)),
-            Commands.waitUntil(shooter.noteInPosition()),
-            shooter.setCommand(0, 0)));
+//    driverController.y().onTrue(Commands.sequence(
+//            pivot.goToPos(Constants.pivotConstants.collectAngle),
+//            shooter.setCommand(-0.6, -0.3)
+//                    .alongWith(collector.runCommand(0.8)),
+//            Commands.waitUntil(shooter.noteInPosition()),
+//            shooter.setCommand(0, 0)));
 
     // shooting
     driverController.b().onTrue(Commands.sequence(
-            shooter.setCommand(1, 0),
-            pivot.goToPos(Constants.pivotConstants.shootAngle),
-            shooter.setCommand(1, 0.4),
-            Commands.waitSeconds(0.75),
-            shooter.setCommand(0, 0),
-            pivot.goToPos(Constants.pivotConstants.collectAngle)));
+            shooter.setVelInstantCommand(4000, 0),
+            pivot.goToPos(Constants.pivotConstants.shootAngle)));
 
-    // amp
-    driverController.b().onTrue(Commands.sequence(
-            shooter.setCommand(0.3, 0),
-            pivot.goToPos(Constants.pivotConstants.ampAngle),
-            shooter.setCommand(0.3, 0.4),
+    // trap
+    driverController.y().onTrue(Commands.sequence(
+            shooter.setVelInstantCommand(8000, 0),
+            pivot.goToPos(Constants.pivotConstants.shootAngle+0.05)));
+
+//
+//    // amp
+    driverController.a().onTrue(Commands.sequence(
+            shooter.setCommand(0.1, 0),
+            pivot.goToPos(Constants.pivotConstants.ampAngle)));
+
+
+    driverController.rightBumper().onTrue(Commands.sequence(
+            shooter.setIndexerCommand(0.4),
             Commands.waitSeconds(0.75),
             shooter.setCommand(0, 0),
             pivot.goToPos(Constants.pivotConstants.collectAngle)));
@@ -131,13 +136,13 @@ public class RobotContainer {
 
     //    SignalLogger.start();
     //
-    //    driverController.a().whileTrue(shooter.sysidForwardDynamic());
-    //    driverController.b().whileTrue(shooter.sysidReverseDynamic());
-    //    driverController.x().whileTrue(shooter.sysidForwardStatic());
-    //    driverController.y().whileTrue(shooter.sysidReverseStatic());
+//        driverController.a().whileTrue(shooter.sysidForwardDynamic());
+//        driverController.b().whileTrue(shooter.sysidReverseDynamic());
+//        driverController.x().whileTrue(shooter.sysidForwardStatic());
+//        driverController.y().whileTrue(shooter.sysidReverseStatic());
     //
-    //    driverController.povRight().onTrue(Commands.runOnce(SignalLogger::stop));
-    //    driverController.povLeft().onTrue(Commands.runOnce(SignalLogger::start));
+        driverController.povRight().onTrue(Commands.runOnce(SignalLogger::stop));
+        driverController.povLeft().onTrue(Commands.runOnce(SignalLogger::start));
   }
 
   /**

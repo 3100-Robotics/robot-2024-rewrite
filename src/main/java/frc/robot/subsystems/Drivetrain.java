@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -34,11 +35,16 @@ public class Drivetrain implements Subsystem {
 
     File swerveJsonDirectory = new File(Filesystem.getDeployDirectory(),"swerve");
     SwerveDrive drive;
+    Vision tagCam, noteCam;
 
-   Vision tagCam, noteCam;
+    PIDController autoCollectingPID;
+    PIDController autoAimingPID;
 
-   PIDController autoCollectingPID;
-   PIDController autoAimingPID;
+    double rateLimit = 4;
+    double maxSpeed = 2;
+
+    SlewRateLimiter xLimiter = new SlewRateLimiter(rateLimit, -5, 0);
+    SlewRateLimiter yLimiter = new SlewRateLimiter(rateLimit, -5, 0);
 
     public Drivetrain(Vision tagCam, Vision noteCam) {
         try {
@@ -135,12 +141,16 @@ public class Drivetrain implements Subsystem {
         return Math.pow(MathUtil.applyDeadband(input, 0.03), 3);
     }
 
+    private double rateLimit(double input, SlewRateLimiter limiter) {
+        return Math.copySign(limiter.calculate(Math.abs(input)), input);
+    }
+
     public Command driveCommand(DoubleSupplier translationX, DoubleSupplier translationY, DoubleSupplier heading,
                                 BooleanSupplier isFieldOriented) {
         return this.run(() -> drive(new Translation2d(
-                -filter(translationX.getAsDouble())*drive.getMaximumVelocity(),
-                -filter(translationY.getAsDouble())*drive.getMaximumVelocity()),
-                -filter(heading.getAsDouble())*drive.getMaximumAngularVelocity(),
+                -rateLimit(filter(translationX.getAsDouble())*maxSpeed, xLimiter),
+                -rateLimit(filter(translationY.getAsDouble())*maxSpeed, yLimiter)),
+                -filter(heading.getAsDouble())*2,
                 isFieldOriented.getAsBoolean()));
     }
 
