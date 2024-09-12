@@ -17,7 +17,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.Vision;
 import org.photonvision.EstimatedRobotPose;
-import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 import swervelib.SwerveDrive;
 import swervelib.math.SwerveMath;
@@ -40,13 +39,13 @@ public class Drivetrain implements Subsystem {
     PIDController autoCollectingPID;
     PIDController autoAimingPID;
 
-    double rateLimit = 4;
-    double maxSpeed = 2;
+    double rateLimit = 8;
+    double maxSpeed = 4;
 
     SlewRateLimiter xLimiter = new SlewRateLimiter(rateLimit, -5, 0);
     SlewRateLimiter yLimiter = new SlewRateLimiter(rateLimit, -5, 0);
 
-    public Drivetrain(Vision tagCam, Vision noteCam) {
+    public Drivetrain(Vision noteCam) {
         try {
             drive = new SwerveParser(swerveJsonDirectory).createSwerveDrive(
                     Constants.driveConstants.maxSpeed,
@@ -61,10 +60,10 @@ public class Drivetrain implements Subsystem {
 
         SwerveDriveTelemetry.verbosity = SwerveDriveTelemetry.TelemetryVerbosity.HIGH;
         drive.setCosineCompensator(false);
-        drive.pushOffsetsToControllers();
+        // drive.pushOffsetsToControllers();
+        drive.pushOffsetsToEncoders();
         drive.setHeadingCorrection(false);
 
-       this.tagCam = tagCam;
        this.noteCam = noteCam;
 
        autoCollectingPID = new PIDController(
@@ -83,8 +82,10 @@ public class Drivetrain implements Subsystem {
     @Override
     public void periodic() {
         drive.updateOdometry();
-        updateOdometry();
+        // updateOdometry();
         SmartDashboard.putNumber("test number", drive.getMaximumAngularVelocity());
+        SmartDashboard.putNumber("pos x", drive.getPose().getX());
+        SmartDashboard.putNumber("pos y", drive.getPose().getY());
     }
 
     private void updateOdometry() {

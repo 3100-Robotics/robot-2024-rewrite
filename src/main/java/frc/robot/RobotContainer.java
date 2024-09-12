@@ -26,9 +26,10 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
 
   public final Vision tagCamera = new Vision("april tags", Constants.Vision.kAprilTagCamTransform);
+  // public final Vision tagCamera = null;
   public final Vision noteCamera = new Vision("note detector", new Transform3d());
 
-  public final Drivetrain drive = new Drivetrain(tagCamera, noteCamera);
+  public final Drivetrain drive = new Drivetrain(noteCamera);
   public final Collector collector = new Collector();
   public final Pivot pivot = new Pivot();
   public final Shooter shooter = new Shooter();
