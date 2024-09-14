@@ -40,7 +40,8 @@ public class Drivetrain implements Subsystem {
     PIDController autoAimingPID;
 
     double rateLimit = 8;
-    double maxSpeed = 4;
+    double maxSpeed = 2;
+    double maxRotation = 4;
 
     SlewRateLimiter xLimiter = new SlewRateLimiter(rateLimit, -5, 0);
     SlewRateLimiter yLimiter = new SlewRateLimiter(rateLimit, -5, 0);
@@ -151,7 +152,7 @@ public class Drivetrain implements Subsystem {
         return this.run(() -> drive(new Translation2d(
                 -rateLimit(filter(translationX.getAsDouble())*maxSpeed, xLimiter),
                 -rateLimit(filter(translationY.getAsDouble())*maxSpeed, yLimiter)),
-                -filter(heading.getAsDouble())*2,
+                -filter(heading.getAsDouble())*maxRotation,
                 isFieldOriented.getAsBoolean()));
     }
 

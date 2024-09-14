@@ -42,7 +42,7 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    SmartDashboard.putBoolean("is field oriented", false);
+    SmartDashboard.putBoolean("is field oriented", true);
 
     drive.setDefaultCommand(drive.driveCommand(
             driverController::getLeftY,
@@ -83,6 +83,7 @@ public class RobotContainer {
        shooter.setCommand(0, 0),
         pivot.goToPos(Constants.pivotConstants.collectAngle)));
 
+      // TODO: reenable
     driverController.x().whileTrue(Commands.parallel(
             pivot.goToPos(Constants.pivotConstants.collectAngle),
             drive.autoCollect(shooter.noteInPosition()),
@@ -99,17 +100,20 @@ public class RobotContainer {
 //            shooter.setCommand(0, 0)));
 
     // shooting
+    // TODO: reenable
     driverController.b().onTrue(Commands.sequence(
-            shooter.setVelInstantCommand(4000, 0),
+            shooter.setVelInstantCommand(20, 0),
             pivot.goToPos(Constants.pivotConstants.shootAngle)));
 
     // trap
+    // TODO: reenable
     driverController.y().onTrue(Commands.sequence(
             shooter.setVelInstantCommand(8000, 0),
             pivot.goToPos(Constants.pivotConstants.shootAngle+0.05)));
 
 //
 //    // amp
+    // TODO: reenable
     driverController.a().onTrue(Commands.sequence(
             shooter.setCommand(0.1, 0),
             pivot.goToPos(Constants.pivotConstants.ampAngle)));
