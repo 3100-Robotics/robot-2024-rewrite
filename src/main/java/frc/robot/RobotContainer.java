@@ -157,6 +157,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return drive.createTrajectory("test drive");
+    return drive.createPPTraj("test drive");
   }
 }

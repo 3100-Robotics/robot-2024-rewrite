@@ -23,6 +23,11 @@ import swervelib.math.SwerveMath;
 import swervelib.parser.SwerveParser;
 import swervelib.telemetry.SwerveDriveTelemetry;
 import com.choreo.lib.*;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.ReplanningConfig;
 
 import java.io.File;
 import java.io.IOException;
@@ -78,6 +83,8 @@ public class Drivetrain implements Subsystem {
                Constants.driveConstants.autoShootI,
                Constants.driveConstants.autoShootD);
        autoAimingPID.setSetpoint(0);
+
+       setupPathPlanner();
     }
 
     @Override
@@ -98,7 +105,40 @@ public class Drivetrain implements Subsystem {
                         estimatedRobotPose.timestampSeconds));
     }
 
-    public Command createTrajectory(String name) {
+    public void setupPathPlanner()  {
+        AutoBuilder.configureHolonomic(
+            this::getPose, // Robot pose supplier
+            this::resetOdometry, // Method to reset odometry (will be called if your auto has a starting pose)
+            drive::getRobotVelocity, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+            drive::setChassisSpeeds, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
+            new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
+                                            new PIDConstants(1),
+                                            // Translation PID constants
+                                            new PIDConstants(0.4, 0, 0.01),
+                                            // Rotation PID constants
+                                            2,
+                                            // Max module speed, in m/s
+                                            drive.swerveDriveConfiguration.getDriveBaseRadiusMeters(),
+                                            // Drive base radius in meters. Distance from robot center to furthest module.
+                                            new ReplanningConfig()
+                                            // Default path replanning config. See the API for the options here
+            ),
+            () -> {
+            // Boolean supplier that controls when the path will be mirrored for the red alliance
+            // This will flip the path being followed to the red side of the field.
+            // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+            var alliance = DriverStation.getAlliance();
+            return alliance.isPresent() ? alliance.get() == DriverStation.Alliance.Red : false;
+            },
+            this);
+    }
+
+    public Command createPPTraj(String pathName)  {
+        // Create a path following command using AutoBuilder. This will also trigger event markers.
+        return new PathPlannerAuto(pathName);
+  }
+
+    public Command createChoreoTraj(String name) {
         ChoreoTrajectory traj = Choreo.getTrajectory(name); //
 
         Command resetPose = this.runOnce(() -> drive.resetOdometry(traj.getFlippedInitialPose()));
