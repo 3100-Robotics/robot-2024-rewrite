@@ -108,8 +108,10 @@ public class RobotContainer {
     // trap
     // TODO: reenable
     driverController.y().onTrue(Commands.sequence(
-            shooter.setVelInstantCommand(8000, 0),
-            pivot.goToPos(Constants.pivotConstants.shootAngle+0.05)));
+            // shooter.setVelInstantCommand(8000, 0),
+            pivot.goToPos(Constants.pivotConstants.shootAngle+0.05),
+            Commands.waitSeconds(1),
+            pivot.goToPos(Constants.pivotConstants.collectAngle)));
 
 //
 //    // amp

@@ -45,8 +45,8 @@ public class Drivetrain implements Subsystem {
     PIDController autoAimingPID;
 
     double rateLimit = 8;
-    double maxSpeed = 2;
-    double maxRotation = 4;
+    double maxSpeed = 4;
+    double maxRotation = 6;
 
     SlewRateLimiter xLimiter = new SlewRateLimiter(rateLimit, -5, 0);
     SlewRateLimiter yLimiter = new SlewRateLimiter(rateLimit, -5, 0);
