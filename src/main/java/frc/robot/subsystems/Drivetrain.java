@@ -141,14 +141,26 @@ public class Drivetrain implements Subsystem {
     public Command createChoreoTraj(String name) {
         ChoreoTrajectory traj = Choreo.getTrajectory(name); //
 
-        Command resetPose = this.runOnce(() -> drive.resetOdometry(traj.getFlippedInitialPose()));
+        BooleanSupplier needToFlip = () -> {
+                    Optional<DriverStation.Alliance> alliance = DriverStation.getAlliance();
+                    return  alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red;};
+
+        Command resetPose;
+        if (needToFlip.getAsBoolean()) {
+            resetPose = this.runOnce(() -> drive.resetOdometry(traj.getFlippedInitialPose()));
+        }
+        else {
+            resetPose = this.runOnce(() -> drive.resetOdometry(traj.getInitialPose()));
+        }
+
+        
 
         return resetPose.andThen(Choreo.choreoSwerveCommand(
                 traj,
                 this::getPose,
-                new PIDController(5.0, 0.0, 0.0),
-                new PIDController(5.0, 0.0, 0.0),
-                new PIDController(5.0, 0.0, 0.0),
+                new PIDController(1.5, 0.0, 0.0),
+                new PIDController(1.5, 0.0, 0.0),
+                new PIDController(2.0, 0.0, 0.0),
                 drive::setChassisSpeeds,
                 () -> {
                     Optional<DriverStation.Alliance> alliance = DriverStation.getAlliance();

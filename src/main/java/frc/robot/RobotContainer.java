@@ -58,6 +58,14 @@ public class RobotContainer {
     configureBindings();
   }
 
+  private Command Collect() {
+    return Commands.none();
+  }
+
+  public void configureAutonomous() {
+
+  }
+
   /**
    * Use this method to define your trigger->command mappings. Triggers can be created via the
    * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
@@ -113,8 +121,8 @@ public class RobotContainer {
             Commands.waitSeconds(1),
             pivot.goToPos(Constants.pivotConstants.collectAngle)));
 
-//
-//    // amp
+
+    // amp
     // TODO: reenable
     driverController.a().onTrue(Commands.sequence(
             shooter.setCommand(0.1, 0),
@@ -159,6 +167,9 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return drive.createPPTraj("test drive");
+    // return drive.createPPTraj("test drive");
+    return drive.createChoreoTraj("test drive");
+    // andThen(Commands.waitSeconds(1)).
+    // andThen(drive.createChoreoTraj("test drive.2"));
   }
 }
