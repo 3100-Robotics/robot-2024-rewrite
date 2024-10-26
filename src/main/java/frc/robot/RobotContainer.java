@@ -5,7 +5,9 @@
 package frc.robot;
 
 import com.ctre.phoenix6.SignalLogger;
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -36,6 +38,10 @@ public class RobotContainer {
 
   private final CommandXboxController driverController =
       new CommandXboxController(0);
+  private final CommandXboxController coDriverController =
+          new CommandXboxController(1);
+
+  private SendableChooser<Command> autos = new SendableChooser<Command>();
 
 //  private final CommandXboxController coDriverController =
 //          new CommandXboxController(1);
@@ -48,7 +54,7 @@ public class RobotContainer {
             driverController::getLeftY,
             driverController::getLeftX,
             driverController::getRightX,
-            () -> SmartDashboard.getBoolean("is field oriented", false)));
+            () -> SmartDashboard.getBoolean("is field oriented", true)));
 
 //    shooter.setDefaultCommand(shooter.setCommand(0, 0));
 
@@ -56,14 +62,51 @@ public class RobotContainer {
 
     // Configure the trigger bindings
     configureBindings();
+    configureAutonomous();
   }
 
   private Command Collect() {
-    return Commands.none();
+    return Commands.sequence(
+                 pivot.goToPos(Constants.pivotConstants.collectAngle),
+                 shooter.setCommand(-0.6, -0.3)
+                         .alongWith(collector.runCommand(0.8)),
+                 Commands.waitUntil(shooter.noteInPosition()),
+                 shooter.setCommand(0, 0));
+  }
+
+  private Command PrepShoot() {
+    return Commands.sequence(
+            shooter.setCommand(1, 0),
+            pivot.goToPos(Constants.pivotConstants.shootAngle));
+  }
+
+  private Command Shoot() {
+    return Commands.sequence(
+            shooter.setCommand(1, 0.5),
+            Commands.waitSeconds(0.75),
+            shooter.setCommand(0,0),
+            pivot.goToPos(Constants.pivotConstants.collectAngle));
   }
 
   public void configureAutonomous() {
+    SmartDashboard.putData(autos);
 
+    NamedCommands.registerCommand("Collect", Collect());
+    NamedCommands.registerCommand("Prep-Shoot", PrepShoot());
+    NamedCommands.registerCommand("Shoot", Shoot());
+
+    Command shoot = Commands.sequence(
+            PrepShoot(),
+            Shoot());
+
+    autos.addOption("just shoot", shoot);
+
+    Command nothing = Commands.none();
+    autos.addOption("nothing", nothing);
+
+    // TODO: make sure this is set up correctly (need to add actions and make sure name is correct)
+    Command threePiece = drive.createPPChoreoTraj("3 note");
+    autos.addOption("three piece", threePiece);
   }
 
   /**
@@ -84,15 +127,14 @@ public class RobotContainer {
     // rb execute action
 
     // collecting
-    driverController.leftBumper().onTrue(Commands.sequence(
+    coDriverController.leftBumper().onTrue(Commands.sequence(
        pivot.goToPos(Constants.pivotConstants.sourceCollectAngle),
        shooter.setCommand(-0.5, -0.3),
         Commands.waitUntil(shooter.noteInPosition()),
        shooter.setCommand(0, 0),
         pivot.goToPos(Constants.pivotConstants.collectAngle)));
 
-      // TODO: reenable
-    driverController.x().whileTrue(Commands.parallel(
+    coDriverController.x().whileTrue(Commands.parallel(
             pivot.goToPos(Constants.pivotConstants.collectAngle),
             drive.autoCollect(shooter.noteInPosition()),
             shooter.setCommand(-0.6, -0.3),
@@ -100,34 +142,32 @@ public class RobotContainer {
             andThen(Commands.waitUntil(shooter.noteInPosition())).
             andThen(shooter.setCommand(0, 0)));
 
-//    driverController.y().onTrue(Commands.sequence(
-//            pivot.goToPos(Constants.pivotConstants.collectAngle),
-//            shooter.setCommand(-0.6, -0.3)
-//                    .alongWith(collector.runCommand(0.8)),
-//            Commands.waitUntil(shooter.noteInPosition()),
-//            shooter.setCommand(0, 0)));
+    driverController.y().onTrue(Commands.sequence(
+            pivot.goToPos(Constants.pivotConstants.collectAngle),
+            shooter.setCommand(-0.6, -0.3)
+                    .alongWith(collector.runCommand(0.8)),
+            Commands.waitUntil(shooter.noteInPosition()),
+            shooter.setCommand(0, 0)));
 
     // shooting
-    // TODO: reenable
-    driverController.b().onTrue(Commands.sequence(
-            shooter.setVelInstantCommand(20, 0),
+    coDriverController.b().onTrue(Commands.sequence(
+            shooter.setVelInstantCommand(8000, 0),
             pivot.goToPos(Constants.pivotConstants.shootAngle)));
 
     // trap
-    // TODO: reenable
-    driverController.y().onTrue(Commands.sequence(
-            shooter.setVelInstantCommand(8000, 0),
-            pivot.goToPos(Constants.pivotConstants.shootAngle+0.05)));
+//    driverController.y().onTrue(Commands.sequence(
+//            shooter.setVelInstantCommand(8000, 0),
+//            pivot.goToPos(Constants.pivotConstants.shootAngle-0.05)));
 
 
     // amp
-    // TODO: reenable
-    driverController.a().onTrue(Commands.sequence(
+    coDriverController.a().onTrue(Commands.sequence(
             shooter.setCommand(0.1, 0),
             pivot.goToPos(Constants.pivotConstants.ampAngle)));
 
 
-    driverController.rightBumper().onTrue(Commands.sequence(
+    // complete action
+    coDriverController.rightBumper().onTrue(Commands.sequence(
             shooter.setIndexerCommand(0.4),
             Commands.waitSeconds(0.75),
             shooter.setCommand(0, 0),
@@ -154,8 +194,8 @@ public class RobotContainer {
 //        driverController.x().whileTrue(shooter.sysidForwardStatic());
 //        driverController.y().whileTrue(shooter.sysidReverseStatic());
     //
-        driverController.povRight().onTrue(Commands.runOnce(SignalLogger::stop));
-        driverController.povLeft().onTrue(Commands.runOnce(SignalLogger::start));
+//        driverController.povRight().onTrue(Commands.runOnce(SignalLogger::stop));
+//        driverController.povLeft().onTrue(Commands.runOnce(SignalLogger::start));
   }
 
   /**
@@ -165,9 +205,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    // return drive.createPPTraj("test drive");
-    return drive.createChoreoTraj("test drive");
-    // andThen(Commands.waitSeconds(1)).
-    // andThen(drive.createChoreoTraj("test drive.2"));
+    return autos.getSelected();
   }
 }

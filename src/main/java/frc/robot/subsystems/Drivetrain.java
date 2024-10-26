@@ -1,17 +1,21 @@
 package frc.robot.subsystems;
 
 
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.util.GeometryUtil;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
@@ -136,7 +140,26 @@ public class Drivetrain implements Subsystem {
     public Command createPPTraj(String pathName)  {
         // Create a path following command using AutoBuilder. This will also trigger event markers.
         return new PathPlannerAuto(pathName);
-  }
+    }
+
+    public Command createPPChoreoTraj(String PathName) {
+        PathPlannerPath path = PathPlannerPath.fromChoreoTrajectory(PathName);
+
+        BooleanSupplier needToFlip = () -> {
+            Optional<DriverStation.Alliance> alliance = DriverStation.getAlliance();
+            return  alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red;};
+
+        Command resetPose;
+        if (needToFlip.getAsBoolean()) {
+            resetPose = this.runOnce(() -> drive.resetOdometry(path.getPreviewStartingHolonomicPose()));
+        }
+        else {
+//            resetPose = this.runOnce(() -> drive.resetOdometry(path.getPreviewStartingHolonomicPose().transformBy(new Transform2d())));
+            resetPose = this.runOnce(() -> drive.resetOdometry(GeometryUtil.flipFieldPose(path.getPreviewStartingHolonomicPose())));
+        }
+
+        return resetPose.andThen(AutoBuilder.followPath(path));
+    }
 
     public Command createChoreoTraj(String name) {
         ChoreoTrajectory traj = Choreo.getTrajectory(name); //
