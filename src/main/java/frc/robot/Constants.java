@@ -48,7 +48,7 @@ public final class Constants {
 
     public static TalonFXConfiguration shooterConfigs = new TalonFXConfiguration()
             .withMotorOutput(new MotorOutputConfigs()
-                    .withInverted(InvertedValue.CounterClockwise_Positive)
+                    .withInverted(InvertedValue.Clockwise_Positive)
                     .withNeutralMode(NeutralModeValue.Brake))
             .withAudio(new AudioConfigs()
                     .withBeepOnConfig(true)
@@ -119,7 +119,7 @@ public final class Constants {
                     .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive));
 
     public static final double collectAngle = -0.19;
-    public static final double sourceCollectAngle = 0.3010;
+    public static final double sourceCollectAngle = 0.3110;
     public static final double ampAngle = 0.3210;
     public static final double shootAngle = 0.1340;
   }

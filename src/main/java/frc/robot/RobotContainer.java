@@ -56,7 +56,7 @@ public class RobotContainer {
             driverController::getRightX,
             () -> SmartDashboard.getBoolean("is field oriented", true)));
 
-//    shooter.setDefaultCommand(shooter.setCommand(0, 0));
+    shooter.setDefaultCommand(shooter.setIndexerCommand(0));
 
     collector.setDefaultCommand(collector.runCommand(-0.3));
 
@@ -105,8 +105,17 @@ public class RobotContainer {
     autos.addOption("nothing", nothing);
 
     // TODO: make sure this is set up correctly (need to add actions and make sure name is correct)
-    Command threePiece = drive.createPPChoreoTraj("3 note");
+    Command threePiece = Commands.sequence(
+            PrepShoot(),
+            Shoot(),
+            drive.createPPChoreoTraj("3 note"));
     autos.addOption("three piece", threePiece);
+
+    Command shootNLeave = Commands.sequence(
+//            PrepShoot(),
+//            Shoot(),
+            drive.createChoreoTraj("leave"));
+    autos.setDefaultOption("leave", shootNLeave);
   }
 
   /**

@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.GeometryUtil;
 import edu.wpi.first.math.MathUtil;
@@ -49,8 +50,8 @@ public class Drivetrain implements Subsystem {
     PIDController autoAimingPID;
 
     double rateLimit = 8;
-    double maxSpeed = 2;
-    double maxRotation = 4;
+    double maxSpeed = 4;
+    double maxRotation = 5;
 
     SlewRateLimiter xLimiter = new SlewRateLimiter(rateLimit, -5, 0);
     SlewRateLimiter yLimiter = new SlewRateLimiter(rateLimit, -5, 0);
@@ -135,6 +136,7 @@ public class Drivetrain implements Subsystem {
             return alliance.isPresent() ? alliance.get() == DriverStation.Alliance.Red : false;
             },
             this);
+
     }
 
     public Command createPPTraj(String pathName)  {
@@ -169,13 +171,13 @@ public class Drivetrain implements Subsystem {
                     return  alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red;};
 
         Command resetPose;
-        if (needToFlip.getAsBoolean()) {
-            resetPose = this.runOnce(() -> drive.resetOdometry(traj.getFlippedInitialPose()));
-        }
-        else {
-            resetPose = this.runOnce(() -> drive.resetOdometry(traj.getInitialPose()));
-        }
-
+        resetPose = this.runOnce(() -> {
+            if (needToFlip.getAsBoolean()) {
+                drive.resetOdometry(traj.getFlippedInitialPose());
+            } else {
+                drive.resetOdometry(traj.getInitialPose());
+            }
+        });
         
 
         return resetPose.andThen(Choreo.choreoSwerveCommand(
