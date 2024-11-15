@@ -77,7 +77,7 @@ public class RobotContainer {
   private Command PrepShoot() {
     return Commands.sequence(
             shooter.setCommand(1, 0),
-            pivot.goToPos(Constants.pivotConstants.shootAngle));
+            pivot.goToPos(Constants.pivotConstants.shootAngle-0.008));
   }
 
   private Command Shoot() {
@@ -112,10 +112,17 @@ public class RobotContainer {
     autos.addOption("three piece", threePiece);
 
     Command shootNLeave = Commands.sequence(
-//            PrepShoot(),
-//            Shoot(),
+           PrepShoot(),
+           Shoot(),
             drive.createChoreoTraj("leave"));
     autos.setDefaultOption("leave", shootNLeave);
+
+    Command close4Piece = Commands.sequence(
+        PrepShoot(),
+        Shoot(),
+        drive.createPPChoreoTraj("close 4 note"),
+            Shoot());
+    autos.addOption("close 4 note", close4Piece);
   }
 
   /**

@@ -121,7 +121,7 @@ public final class Constants {
     public static final double collectAngle = -0.19;
     public static final double sourceCollectAngle = 0.3110;
     public static final double ampAngle = 0.3210;
-    public static final double shootAngle = 0.1340;
+    public static final double shootAngle = 0.140;
   }
 
   public static class collectorConstants {

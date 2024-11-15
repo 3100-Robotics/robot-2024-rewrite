@@ -119,7 +119,7 @@ public class Drivetrain implements Subsystem {
             new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
                                             new PIDConstants(1),
                                             // Translation PID constants
-                                            new PIDConstants(0.4, 0, 0.01),
+                                            new PIDConstants(0.5, 0.0001, 0.01),
                                             // Rotation PID constants
                                             2,
                                             // Max module speed, in m/s
@@ -146,19 +146,30 @@ public class Drivetrain implements Subsystem {
 
     public Command createPPChoreoTraj(String PathName) {
         PathPlannerPath path = PathPlannerPath.fromChoreoTrajectory(PathName);
+        ChoreoTrajectory traj = Choreo.getTrajectory(PathName); //
 
         BooleanSupplier needToFlip = () -> {
             Optional<DriverStation.Alliance> alliance = DriverStation.getAlliance();
             return  alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red;};
 
         Command resetPose;
-        if (needToFlip.getAsBoolean()) {
-            resetPose = this.runOnce(() -> drive.resetOdometry(path.getPreviewStartingHolonomicPose()));
-        }
-        else {
-//            resetPose = this.runOnce(() -> drive.resetOdometry(path.getPreviewStartingHolonomicPose().transformBy(new Transform2d())));
-            resetPose = this.runOnce(() -> drive.resetOdometry(GeometryUtil.flipFieldPose(path.getPreviewStartingHolonomicPose())));
-        }
+//         if (needToFlip.getAsBoolean()) {
+//             resetPose = this.runOnce(() -> drive.resetOdometry(path.getPreviewStartingHolonomicPose()));
+//         }
+//         else {
+// //            resetPose = this.runOnce(() -> drive.resetOdometry(path.getPreviewStartingHolonomicPose().transformBy(new Transform2d())));
+//             resetPose = this.runOnce(() -> drive.resetOdometry(GeometryUtil.flipFieldPose(path.getPreviewStartingHolonomicPose())));
+//         }
+        resetPose = this.runOnce(() -> {
+            if (!needToFlip.getAsBoolean()) {
+                System.out.println("not flipped");
+                drive.resetOdometry(traj.getInitialPose());
+            }
+            else {
+                System.out.println("flipped");
+                drive.resetOdometry(traj.getFlippedInitialPose());
+            }
+        });
 
         return resetPose.andThen(AutoBuilder.followPath(path));
     }
