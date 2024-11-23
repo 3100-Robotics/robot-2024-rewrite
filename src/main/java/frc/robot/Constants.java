@@ -105,7 +105,7 @@ public final class Constants {
             .withSlot0(new Slot0Configs()
                     .withKP(61.047)
                     .withKI(0)
-                    .withKD(5)//11.137
+                    .withKD(11.137)//11.137
                     .withGravityType(GravityTypeValue.Arm_Cosine)
                     .withKG(0.075898)
                     .withKS(0.19168)

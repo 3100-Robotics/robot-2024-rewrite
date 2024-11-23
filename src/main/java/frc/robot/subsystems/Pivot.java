@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.SignalLogger;
+import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -49,6 +50,7 @@ public class Pivot implements Subsystem {
     public void periodic() {
 //        SmartDashboard.putNumber("pivot pos", pivotMotor.getPosition().getValueAsDouble());
         SmartDashboard.putBoolean("at pivot setpoint", atSetpoint.getAsBoolean());
+        SmartDashboard.putNumber("pivot volage", pivotMotor.getMotorVoltage().getValue());
     }
 
     public double getPivotPos() {
@@ -58,7 +60,7 @@ public class Pivot implements Subsystem {
     public Command goToPos(double pos) {
         return this.runOnce(() -> {
             setpoint = pos;
-            pivotMotor.setControl(new MotionMagicVoltage(pos));})
+            pivotMotor.setControl(new MotionMagicExpoVoltage(pos));})
                 .andThen(Commands.waitUntil(atSetpoint));
     }
 

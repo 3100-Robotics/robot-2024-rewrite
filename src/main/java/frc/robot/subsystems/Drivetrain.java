@@ -56,7 +56,7 @@ public class Drivetrain implements Subsystem {
     SlewRateLimiter xLimiter = new SlewRateLimiter(rateLimit, -5, 0);
     SlewRateLimiter yLimiter = new SlewRateLimiter(rateLimit, -5, 0);
 
-    public Drivetrain(Vision noteCam) {
+    public Drivetrain(Vision noteCam, Vision tagCam) {
         try {
             drive = new SwerveParser(swerveJsonDirectory).createSwerveDrive(
                     Constants.driveConstants.maxSpeed,
@@ -76,6 +76,7 @@ public class Drivetrain implements Subsystem {
         drive.setHeadingCorrection(false);
 
        this.noteCam = noteCam;
+       this.tagCam = tagCam;
 
        autoCollectingPID = new PIDController(
                Constants.driveConstants.autoCollectP,
@@ -95,10 +96,11 @@ public class Drivetrain implements Subsystem {
     @Override
     public void periodic() {
         drive.updateOdometry();
-        // updateOdometry();
+         updateOdometry();
         SmartDashboard.putNumber("test number", drive.getMaximumAngularVelocity());
         SmartDashboard.putNumber("pos x", drive.getPose().getX());
         SmartDashboard.putNumber("pos y", drive.getPose().getY());
+        
     }
 
     private void updateOdometry() {
@@ -117,9 +119,9 @@ public class Drivetrain implements Subsystem {
             drive::getRobotVelocity, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
             drive::setChassisSpeeds, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
             new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
-                                            new PIDConstants(1),
+                                            new PIDConstants(1.5),
                                             // Translation PID constants
-                                            new PIDConstants(0.5, 0.0001, 0.01),
+                                            new PIDConstants(0.55, 0.0001, 0.01),
                                             // Rotation PID constants
                                             2,
                                             // Max module speed, in m/s
@@ -146,7 +148,7 @@ public class Drivetrain implements Subsystem {
 
     public Command createPPChoreoTraj(String PathName) {
         PathPlannerPath path = PathPlannerPath.fromChoreoTrajectory(PathName);
-        ChoreoTrajectory traj = Choreo.getTrajectory(PathName); //
+        ChoreoTrajectory traj = Choreo.getTrajectory(PathName);
 
         BooleanSupplier needToFlip = () -> {
             Optional<DriverStation.Alliance> alliance = DriverStation.getAlliance();
