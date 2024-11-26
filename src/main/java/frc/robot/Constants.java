@@ -48,7 +48,7 @@ public final class Constants {
 
     public static TalonFXConfiguration shooterConfigs = new TalonFXConfiguration()
             .withMotorOutput(new MotorOutputConfigs()
-                    .withInverted(InvertedValue.CounterClockwise_Positive)
+                    .withInverted(InvertedValue.Clockwise_Positive)
                     .withNeutralMode(NeutralModeValue.Brake))
             .withAudio(new AudioConfigs()
                     .withBeepOnConfig(true)
@@ -59,13 +59,13 @@ public final class Constants {
                     .withSupplyCurrentLimitEnable(true))
             .withSlot0(new Slot0Configs()
                     .withGravityType(GravityTypeValue.Elevator_Static)
-                    .withKP(0.5)
+                    .withKP(0.042311)
                     .withKI(0)
                     .withKD(0)
                     .withKG(0)
-                    .withKS(0)
-                    .withKV(0)
-                    .withKA(0))
+                    .withKS(0.12246)
+                    .withKV(0.11112)
+                    .withKA(0.0041615))
             .withClosedLoopRamps(new ClosedLoopRampsConfigs()
                     .withVoltageClosedLoopRampPeriod(1))
             .withMotionMagic(new MotionMagicConfigs()
@@ -105,7 +105,7 @@ public final class Constants {
             .withSlot0(new Slot0Configs()
                     .withKP(61.047)
                     .withKI(0)
-                    .withKD(5)//11.137
+                    .withKD(11.137)//11.137
                     .withGravityType(GravityTypeValue.Arm_Cosine)
                     .withKG(0.075898)
                     .withKS(0.19168)
@@ -119,9 +119,9 @@ public final class Constants {
                     .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive));
 
     public static final double collectAngle = -0.19;
-    public static final double sourceCollectAngle = 0.3010;
+    public static final double sourceCollectAngle = 0.3110;
     public static final double ampAngle = 0.3210;
-    public static final double shootAngle = 0.1340;
+    public static final double shootAngle = 0.140;
   }
 
   public static class collectorConstants {

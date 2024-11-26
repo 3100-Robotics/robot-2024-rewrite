@@ -1,17 +1,22 @@
 package frc.robot.subsystems;
 
 
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.util.GeometryUtil;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
@@ -23,6 +28,11 @@ import swervelib.math.SwerveMath;
 import swervelib.parser.SwerveParser;
 import swervelib.telemetry.SwerveDriveTelemetry;
 import com.choreo.lib.*;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.ReplanningConfig;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,13 +49,14 @@ public class Drivetrain implements Subsystem {
     PIDController autoCollectingPID;
     PIDController autoAimingPID;
 
-    double rateLimit = 8;
-    double maxSpeed = 4;
+    double rateLimit = 2;
+    double maxSpeed = 1;
+    double maxRotation = 2;
 
     SlewRateLimiter xLimiter = new SlewRateLimiter(rateLimit, -5, 0);
     SlewRateLimiter yLimiter = new SlewRateLimiter(rateLimit, -5, 0);
 
-    public Drivetrain(Vision noteCam) {
+    public Drivetrain(Vision noteCam, Vision tagCam) {
         try {
             drive = new SwerveParser(swerveJsonDirectory).createSwerveDrive(
                     Constants.driveConstants.maxSpeed,
@@ -65,6 +76,7 @@ public class Drivetrain implements Subsystem {
         drive.setHeadingCorrection(false);
 
        this.noteCam = noteCam;
+       this.tagCam = tagCam;
 
        autoCollectingPID = new PIDController(
                Constants.driveConstants.autoCollectP,
@@ -77,15 +89,18 @@ public class Drivetrain implements Subsystem {
                Constants.driveConstants.autoShootI,
                Constants.driveConstants.autoShootD);
        autoAimingPID.setSetpoint(0);
+
+       setupPathPlanner();
     }
 
     @Override
     public void periodic() {
         drive.updateOdometry();
-        // updateOdometry();
+         updateOdometry();
         SmartDashboard.putNumber("test number", drive.getMaximumAngularVelocity());
         SmartDashboard.putNumber("pos x", drive.getPose().getX());
         SmartDashboard.putNumber("pos y", drive.getPose().getY());
+        
     }
 
     private void updateOdometry() {
@@ -97,17 +112,93 @@ public class Drivetrain implements Subsystem {
                         estimatedRobotPose.timestampSeconds));
     }
 
-    public Command createTrajectory(String name) {
+    public void setupPathPlanner()  {
+        AutoBuilder.configureHolonomic(
+            this::getPose, // Robot pose supplier
+            this::resetOdometry, // Method to reset odometry (will be called if your auto has a starting pose)
+            drive::getRobotVelocity, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+            drive::setChassisSpeeds, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
+            new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
+                                            new PIDConstants(1.5),
+                                            // Translation PID constants
+                                            new PIDConstants(0.55, 0.0001, 0.01),
+                                            // Rotation PID constants
+                                            2,
+                                            // Max module speed, in m/s
+                                            drive.swerveDriveConfiguration.getDriveBaseRadiusMeters(),
+                                            // Drive base radius in meters. Distance from robot center to furthest module.
+                                            new ReplanningConfig()
+                                            // Default path replanning config. See the API for the options here
+            ),
+            () -> {
+            // Boolean supplier that controls when the path will be mirrored for the red alliance
+            // This will flip the path being followed to the red side of the field.
+            // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+            var alliance = DriverStation.getAlliance();
+            return alliance.isPresent() ? alliance.get() == DriverStation.Alliance.Red : false;
+            },
+            this);
+
+    }
+
+    public Command createPPTraj(String pathName)  {
+        // Create a path following command using AutoBuilder. This will also trigger event markers.
+        return new PathPlannerAuto(pathName);
+    }
+
+    public Command createPPChoreoTraj(String PathName) {
+        PathPlannerPath path = PathPlannerPath.fromChoreoTrajectory(PathName);
+        ChoreoTrajectory traj = Choreo.getTrajectory(PathName);
+
+        BooleanSupplier needToFlip = () -> {
+            Optional<DriverStation.Alliance> alliance = DriverStation.getAlliance();
+            return  alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red;};
+
+        Command resetPose;
+//         if (needToFlip.getAsBoolean()) {
+//             resetPose = this.runOnce(() -> drive.resetOdometry(path.getPreviewStartingHolonomicPose()));
+//         }
+//         else {
+// //            resetPose = this.runOnce(() -> drive.resetOdometry(path.getPreviewStartingHolonomicPose().transformBy(new Transform2d())));
+//             resetPose = this.runOnce(() -> drive.resetOdometry(GeometryUtil.flipFieldPose(path.getPreviewStartingHolonomicPose())));
+//         }
+        resetPose = this.runOnce(() -> {
+            if (!needToFlip.getAsBoolean()) {
+                System.out.println("not flipped");
+                drive.resetOdometry(traj.getInitialPose());
+            }
+            else {
+                System.out.println("flipped");
+                drive.resetOdometry(traj.getFlippedInitialPose());
+            }
+        });
+
+        return resetPose.andThen(AutoBuilder.followPath(path));
+    }
+
+    public Command createChoreoTraj(String name) {
         ChoreoTrajectory traj = Choreo.getTrajectory(name); //
 
-        Command resetPose = this.runOnce(() -> drive.resetOdometry(traj.getFlippedInitialPose()));
+        BooleanSupplier needToFlip = () -> {
+                    Optional<DriverStation.Alliance> alliance = DriverStation.getAlliance();
+                    return  alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red;};
+
+        Command resetPose;
+        resetPose = this.runOnce(() -> {
+            if (needToFlip.getAsBoolean()) {
+                drive.resetOdometry(traj.getFlippedInitialPose());
+            } else {
+                drive.resetOdometry(traj.getInitialPose());
+            }
+        });
+        
 
         return resetPose.andThen(Choreo.choreoSwerveCommand(
                 traj,
                 this::getPose,
-                new PIDController(5.0, 0.0, 0.0),
-                new PIDController(5.0, 0.0, 0.0),
-                new PIDController(5.0, 0.0, 0.0),
+                new PIDController(1.5, 0.0, 0.0),
+                new PIDController(1.5, 0.0, 0.0),
+                new PIDController(2.0, 0.0, 0.0),
                 drive::setChassisSpeeds,
                 () -> {
                     Optional<DriverStation.Alliance> alliance = DriverStation.getAlliance();
@@ -151,7 +242,7 @@ public class Drivetrain implements Subsystem {
         return this.run(() -> drive(new Translation2d(
                 -rateLimit(filter(translationX.getAsDouble())*maxSpeed, xLimiter),
                 -rateLimit(filter(translationY.getAsDouble())*maxSpeed, yLimiter)),
-                -filter(heading.getAsDouble())*2,
+                -filter(heading.getAsDouble())*maxRotation,
                 isFieldOriented.getAsBoolean()));
     }
 
