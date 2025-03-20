@@ -250,6 +250,8 @@ public class RobotContainer {
     //
         driverController.povRight().onTrue(Commands.runOnce(SignalLogger::stop));
         driverController.povLeft().onTrue(Commands.runOnce(SignalLogger::start));
+
+        driverController.povUp().whileTrue(drive.lineUpWithTag());
   }
 
   /**

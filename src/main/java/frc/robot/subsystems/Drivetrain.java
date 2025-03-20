@@ -261,5 +261,22 @@ public class Drivetrain implements Subsystem {
     public void lock() {
         drive.lockPose();
     }
+
+    public Command lineUpWithTag() {
+        // get the camera results
+        PhotonPipelineResult frontResults = tagCam.getLatestResult();
+//        PhotonPipelineResult backResults = backCamera.getLatestResult();
+
+        PhotonTrackedTarget frontBestTarget;
+
+        // check if either of the cameras have targets.
+        // if they do get their best targets. defaults to the front camera
+        if (frontResults.hasTargets()) {
+            frontBestTarget = frontResults.getBestTarget();
+            return this.run(() -> drive(
+                    new Translation2d(0, 0), Math.copySign(10, frontBestTarget.getYaw()), false, false));
+        }
+        return Commands.none();
+    }
 }
 
