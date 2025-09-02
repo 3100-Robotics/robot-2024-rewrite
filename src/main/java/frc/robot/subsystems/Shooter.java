@@ -5,13 +5,16 @@ import au.grapplerobotics.ConfigurationFailedException;
 import au.grapplerobotics.LaserCan;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.revrobotics.CANSparkBase;
-import com.revrobotics.CANSparkLowLevel;
-import com.revrobotics.CANSparkMax;
-import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.Voltage;
+import com.revrobotics.spark.SparkLowLevel;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.config.SparkBaseConfig;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -23,7 +26,7 @@ import static edu.wpi.first.units.Units.Volts;
 public class Shooter implements Subsystem {
 
     private TalonFX shooterMotor;
-    private CANSparkMax indexerMotor;
+    private SparkMax indexerMotor;
 
     private LaserCan noteSensor;
 
@@ -42,10 +45,12 @@ public class Shooter implements Subsystem {
         shooterMotor = new TalonFX(Constants.shooterConstants.shooterMotorID);
         shooterMotor.getConfigurator().apply(Constants.shooterConstants.shooterConfigs);
 
-        indexerMotor = new CANSparkMax(Constants.shooterConstants.indexerMotorID, CANSparkLowLevel.MotorType.kBrushless);
-        indexerMotor.setIdleMode(CANSparkBase.IdleMode.kBrake);
-        indexerMotor.setInverted(false);
-        indexerMotor.setSmartCurrentLimit(20);
+        indexerMotor = new SparkMax(Constants.shooterConstants.indexerMotorID, SparkLowLevel.MotorType.kBrushless);
+        SparkBaseConfig imotorconf = new SparkMaxConfig()
+            .idleMode(IdleMode.kBrake)
+            .inverted(false)
+            .smartCurrentLimit(20);
+        indexerMotor.configure(imotorconf, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
 
         noteSensor = new LaserCan(Constants.shooterConstants.laserCanID);
         try {
@@ -82,7 +87,7 @@ public class Shooter implements Subsystem {
         return noteSensorActive;
     }
 
-    public void setShooterVoltage(Measure<Voltage> volts) {
+    public void setShooterVoltage(Voltage volts) {
         shooterMotor.setVoltage(volts.baseUnitMagnitude());
     }
 

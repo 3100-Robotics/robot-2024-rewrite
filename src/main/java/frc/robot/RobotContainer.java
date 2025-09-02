@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import com.ctre.phoenix6.SignalLogger;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -25,10 +23,12 @@ import frc.robot.subsystems.Shooter;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
 
-  public final Vision tagCamera = new Vision("april tags", Constants.Vision.kAprilTagCamTransform);
-  public final Vision noteCamera = new Vision("note detector", new Transform3d());
+//   public final Vision tagCamera = new Vision("april tags", Constants.Vision.kAprilTagCamTransform);
+//   public final Vision noteCamera = new Vision("note detector", new Transform3d());
 
-  public final Drivetrain drive = new Drivetrain(tagCamera, noteCamera);
+  // public final Drivetrain drive = new Drivetrain(tagCamera, noteCamera);
+  public final Drivetrain drive = new Drivetrain();
+
   public final Collector collector = new Collector();
   public final Pivot pivot = new Pivot();
   public final Shooter shooter = new Shooter();
@@ -82,13 +82,13 @@ public class RobotContainer {
         Commands.waitUntil(shooter.noteInPosition()),
        shooter.setCommand(0, 0)));
 
-    driverController.x().whileTrue(Commands.parallel(
-            pivot.goToPos(Constants.pivotConstants.collectAngle),
-            drive.autoCollect(shooter.noteInPosition()),
-            shooter.setCommand(-0.4, -0.3),
-            collector.runCommand(0.3)).
-            andThen(Commands.waitUntil(shooter.noteInPosition())).
-            andThen(shooter.setCommand(0, 0)));
+//     driverController.x().whileTrue(Commands.parallel(
+//             pivot.goToPos(Constants.pivotConstants.collectAngle),
+//             drive.autoCollect(shooter.noteInPosition()),
+//             shooter.setCommand(-0.4, -0.3),
+//             collector.runCommand(0.3)).
+//             andThen(Commands.waitUntil(shooter.noteInPosition())).
+//             andThen(shooter.setCommand(0, 0)));
 
     driverController.y().onTrue(Commands.sequence(
             pivot.goToPos(Constants.pivotConstants.collectAngle),
@@ -147,6 +147,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return drive.createTrajectory("test drive");
+    return Commands.none();//drive.createTrajectory("test drive");
   }
 }

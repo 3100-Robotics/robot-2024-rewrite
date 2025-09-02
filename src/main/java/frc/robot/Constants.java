@@ -113,10 +113,11 @@ public final class Constants {
                     .withKA(0.93568));
 
     public static CANcoderConfiguration pivotEncoderConfigs = new CANcoderConfiguration()
-            .withMagnetSensor(new MagnetSensorConfigs()
-                    .withAbsoluteSensorRange(AbsoluteSensorRangeValue.Signed_PlusMinusHalf)
-                    .withMagnetOffset(-0.7822265625)
-                    .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive));
+        .withMagnetSensor(new MagnetSensorConfigs()
+        // .withAbsoluteSensorRange(AbsoluteSensorRangeValue.Signed_PlusMinusHalf) TODO: Man scre this what does this even do
+        .withMagnetOffset(-0.7822265625)
+        .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive));
+
 
     public static final double collectAngle = -0.1789;
     public static final double ampAngle = 0.3210;
