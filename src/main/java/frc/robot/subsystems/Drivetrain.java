@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants;
 import swervelib.SwerveDrive;
 import swervelib.math.SwerveMath;
@@ -33,8 +34,11 @@ public class Drivetrain implements Subsystem {
    PIDController autoCollectingPID;
    PIDController autoAimingPID;
 
+   CommandXboxController ctl;
+
    // public Drivetrain(Vision tagCam, Vision noteCam) {
-    public Drivetrain() {
+    public Drivetrain(CommandXboxController ctl) {
+        this.ctl = ctl;
         try {
             drive = new SwerveParser(swerveJsonDirectory).createSwerveDrive(
                     Constants.driveConstants.maxSpeed,
@@ -50,7 +54,8 @@ public class Drivetrain implements Subsystem {
         SwerveDriveTelemetry.verbosity = SwerveDriveTelemetry.TelemetryVerbosity.HIGH;
         drive.setCosineCompensator(false);
         // drive.pushOffsetsToControllers();
-        drive.pushOffsetsToEncoders(); // TODO THANK YOU FOR KEEPING THIS METHOD ASQUARE
+        // drive.pushOffsetsToEncoders(); // TODO THANK YOU FOR KEEPING THIS METHOD ASQUARE
+        // drive.pushOffsetsToEncoders();
         drive.setHeadingCorrection(false);
 
     //    this.tagCam = tagCam;
@@ -73,6 +78,7 @@ public class Drivetrain implements Subsystem {
     public void periodic() {
         drive.updateOdometry();
         updateOdometry();
+        SmartDashboard.putNumber("gang", ctl.getLeftY());
         SmartDashboard.putNumber("test number", drive.getMaximumChassisAngularVelocity());
     }
 

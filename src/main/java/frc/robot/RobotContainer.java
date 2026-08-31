@@ -27,14 +27,13 @@ public class RobotContainer {
 //   public final Vision noteCamera = new Vision("note detector", new Transform3d());
 
   // public final Drivetrain drive = new Drivetrain(tagCamera, noteCamera);
-  public final Drivetrain drive = new Drivetrain();
+  private final CommandXboxController driverController =
+      new CommandXboxController(0);
+  public final Drivetrain drive = new Drivetrain(driverController);
 
   public final Collector collector = new Collector();
   public final Pivot pivot = new Pivot();
   public final Shooter shooter = new Shooter();
-
-  private final CommandXboxController driverController =
-      new CommandXboxController(0);
 
 //  private final CommandXboxController coDriverController =
 //          new CommandXboxController(1);
@@ -48,6 +47,8 @@ public class RobotContainer {
             driverController::getLeftX,
             driverController::getRightX,
             () -> SmartDashboard.getBoolean("is field oriented", false)));
+
+   
 
 //    shooter.setDefaultCommand(shooter.setCommand(0, 0));
 
