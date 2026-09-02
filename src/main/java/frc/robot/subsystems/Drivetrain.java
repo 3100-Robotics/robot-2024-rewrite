@@ -6,7 +6,11 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructArrayPublisher;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -35,8 +39,10 @@ public class Drivetrain implements Subsystem {
    PIDController autoAimingPID;
 
    CommandXboxController ctl;
+   SwerveModuleState[] swervestate;
+   NetworkTableInstance ntinst = NetworkTableInstance.getDefault();
+   StructArrayPublisher<SwerveModuleState> swervepub = ntinst.getStructArrayTopic("swervepub", SwerveModuleState.struct).publish();
 
-   // public Drivetrain(Vision tagCam, Vision noteCam) {
     public Drivetrain(CommandXboxController ctl) {
         this.ctl = ctl;
         try {
@@ -79,7 +85,10 @@ public class Drivetrain implements Subsystem {
         drive.updateOdometry();
         updateOdometry();
         SmartDashboard.putNumber("gang", ctl.getLeftY());
+        
         SmartDashboard.putNumber("test number", drive.getMaximumChassisAngularVelocity());
+        swervestate = drive.getStates();
+        swervepub.set(swervestate);
     }
 
     private void updateOdometry() {

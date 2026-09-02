@@ -52,7 +52,7 @@ public class RobotContainer {
 
 //    shooter.setDefaultCommand(shooter.setCommand(0, 0));
 
-    collector.setDefaultCommand(collector.runCommand(-0.3));
+    // collector.setDefaultCommand(collector.runCommand(-0.3));
 
     // Configure the trigger bindings
     configureBindings();
