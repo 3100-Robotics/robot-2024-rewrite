@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants;
 import swervelib.SwerveDrive;
@@ -38,12 +39,12 @@ public class Drivetrain implements Subsystem {
    PIDController autoCollectingPID;
    PIDController autoAimingPID;
 
-   CommandXboxController ctl;
+   CommandPS4Controller ctl;
    SwerveModuleState[] swervestate;
    NetworkTableInstance ntinst = NetworkTableInstance.getDefault();
    StructArrayPublisher<SwerveModuleState> swervepub = ntinst.getStructArrayTopic("swervepub", SwerveModuleState.struct).publish();
 
-    public Drivetrain(CommandXboxController ctl) {
+    public Drivetrain(CommandPS4Controller ctl) {
         this.ctl = ctl;
         try {
             drive = new SwerveParser(swerveJsonDirectory).createSwerveDrive(
@@ -143,7 +144,7 @@ public class Drivetrain implements Subsystem {
     }
 
     private double filter(double input) {
-        return Math.pow(MathUtil.applyDeadband(input, 0.03), 3);
+        return Math.pow(MathUtil.applyDeadband(input, 0.09), 3);
     }
 
     public Command driveCommand(DoubleSupplier translationX, DoubleSupplier translationY, DoubleSupplier heading,

@@ -44,11 +44,11 @@ public final class Constants {
   public static class shooterConstants {
     public static final int shooterMotorID = 9;
     public static final int indexerMotorID = 10;
-    public static final int laserCanID = 63;
+    public static final int laserCanID = 11;
 
     public static TalonFXConfiguration shooterConfigs = new TalonFXConfiguration()
             .withMotorOutput(new MotorOutputConfigs()
-                    .withInverted(InvertedValue.CounterClockwise_Positive)
+                    .withInverted(InvertedValue.Clockwise_Positive)
                     .withNeutralMode(NeutralModeValue.Brake))
             .withAudio(new AudioConfigs()
                     .withBeepOnConfig(true)

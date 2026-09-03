@@ -55,7 +55,9 @@ public class Shooter implements Subsystem {
         noteSensor = new LaserCan(Constants.shooterConstants.laserCanID);
         try {
             noteSensor.setRangingMode(LaserCan.RangingMode.SHORT);
-        } catch (ConfigurationFailedException ignored) {}
+        } catch (ConfigurationFailedException ignored) {
+            // throw new RuntimeException("No lasercan!");
+        }
 
         noteSensorActive = new Trigger(() -> noteSensor.getMeasurement().distance_mm < 100);
     }

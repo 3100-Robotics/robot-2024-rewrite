@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import au.grapplerobotics.CanBridge;
+import au.grapplerobotics.GrappleException;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -24,6 +26,10 @@ public class Robot extends TimedRobot {
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
+  public Robot() {
+    CanBridge.runTCP();
+  }
+
   @Override
   public void robotInit() {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our

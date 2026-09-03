@@ -7,6 +7,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.Collector;
@@ -27,8 +28,8 @@ public class RobotContainer {
 //   public final Vision noteCamera = new Vision("note detector", new Transform3d());
 
   // public final Drivetrain drive = new Drivetrain(tagCamera, noteCamera);
-  private final CommandXboxController driverController =
-      new CommandXboxController(0);
+  private final CommandPS4Controller driverController =
+      new CommandPS4Controller(0);
   public final Drivetrain drive = new Drivetrain(driverController);
 
   public final Collector collector = new Collector();
@@ -40,19 +41,19 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    SmartDashboard.putBoolean("is field oriented", false);
+    SmartDashboard.putBoolean("is field oriented", true);
 
     drive.setDefaultCommand(drive.driveCommand(
             driverController::getLeftY,
             driverController::getLeftX,
             driverController::getRightX,
-            () -> SmartDashboard.getBoolean("is field oriented", false)));
+            () -> SmartDashboard.getBoolean("is field oriented", true)));
 
    
 
 //    shooter.setDefaultCommand(shooter.setCommand(0, 0));
 
-    // collector.setDefaultCommand(collector.runCommand(-0.3));
+    collector.setDefaultCommand(collector.runCommand(-0.3));
 
     // Configure the trigger bindings
     configureBindings();
@@ -76,12 +77,20 @@ public class RobotContainer {
     // rb execute action
 
     // collecting
-    driverController.leftBumper().onTrue(Commands.sequence(
+    driverController.cross().onTrue(Commands.sequence(
        pivot.goToPos(Constants.pivotConstants.collectAngle),
        shooter.setCommand(-0.5, -0.3)
                .alongWith(collector.runCommand(0.4)),
         Commands.waitUntil(shooter.noteInPosition()),
        shooter.setCommand(0, 0)));
+
+    // Amp intake
+    driverController.circle().onTrue(Commands.sequence(
+        pivot.goToPos(Constants.pivotConstants.ampAngle),
+        shooter.setCommand(-0.5, -0.3)
+                .alongWith(collector.runCommand(0.4)),
+         Commands.waitUntil(shooter.noteInPosition()),
+        shooter.setCommand(0, 0)));
 
 //     driverController.x().whileTrue(Commands.parallel(
 //             pivot.goToPos(Constants.pivotConstants.collectAngle),
@@ -91,7 +100,7 @@ public class RobotContainer {
 //             andThen(Commands.waitUntil(shooter.noteInPosition())).
 //             andThen(shooter.setCommand(0, 0)));
 
-    driverController.y().onTrue(Commands.sequence(
+    driverController.L2().onTrue(Commands.sequence(
             pivot.goToPos(Constants.pivotConstants.collectAngle),
             shooter.setCommand(-0.4, -0.3)
                     .alongWith(collector.runCommand(0.3)),
@@ -99,8 +108,8 @@ public class RobotContainer {
             shooter.setCommand(0, 0)));
 
     // shooting
-    driverController.b().onTrue(Commands.sequence(
-            shooter.setCommand(1, 0),
+    driverController.triangle().onTrue(Commands.sequence(
+            shooter.setCommand(0.1, 0),
             pivot.goToPos(Constants.pivotConstants.shootAngle),
             shooter.setCommand(1, 0.4),
             Commands.waitSeconds(0.75),
@@ -108,37 +117,13 @@ public class RobotContainer {
             pivot.goToPos(Constants.pivotConstants.collectAngle)));
 
     // amp
-    driverController.b().onTrue(Commands.sequence(
+    driverController.square().onTrue(Commands.sequence(
             shooter.setCommand(0.3, 0),
             pivot.goToPos(Constants.pivotConstants.ampAngle),
             shooter.setCommand(0.3, 0.4),
             Commands.waitSeconds(0.75),
             shooter.setCommand(0, 0),
             pivot.goToPos(Constants.pivotConstants.collectAngle)));
-
-    // driver commands
-
-    // tuning
-
-    //    driverController.a().whileTrue(pivot.goToPos(-0.178));
-//        driverController.b().whileTrue(pivot.goToPos(0));
-//        driverController.x().whileTrue(pivot.goToPos(0.126));
-    //    driverController.y().whileTrue(pivot.goToPos(0.302));
-
-//      driverController.a().whileTrue(shooter.setCommand(1, 0.4));
-//      driverController.a().onFalse(shooter.setCommand(0, 0));
-//      driverController.b().whileTrue(shooter.setCommand(0.2, 0.4));
-//      driverController.b().onFalse(shooter.setCommand(0, 0));
-
-    //    SignalLogger.start();
-    //
-    //    driverController.a().whileTrue(shooter.sysidForwardDynamic());
-    //    driverController.b().whileTrue(shooter.sysidReverseDynamic());
-    //    driverController.x().whileTrue(shooter.sysidForwardStatic());
-    //    driverController.y().whileTrue(shooter.sysidReverseStatic());
-    //
-    //    driverController.povRight().onTrue(Commands.runOnce(SignalLogger::stop));
-    //    driverController.povLeft().onTrue(Commands.runOnce(SignalLogger::start));
   }
 
   /**
